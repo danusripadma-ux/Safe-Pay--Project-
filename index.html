@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Safe Pay</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            border: none;
+        }
+        button {
+            background: #22c55e;
+            color: white;
+            cursor: pointer;
+        }
+        .box {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Safe Pay 💳</h1>
+<p>Secure Payment System</p>
+
+<div class="box">
+    <input type="text" id="upi" placeholder="Enter UPI ID">
+    <br>
+    <button onclick="checkUser()">Verify</button>
+
+    <p id="result"></p>
+</div>
+
+<div class="box" id="paymentBox" style="display:none;">
+    <p id="warning"></p>
+    <button onclick="sendOTP()">Proceed to Pay</button>
+</div>
+
+<div class="box" id="otpBox" style="display:none;">
+    <p>Enter OTP (Hint: 1234)</p>
+    <input type="text" id="otp">
+    <br>
+    <button onclick="verifyOTP()">Confirm Payment</button>
+</div>
+
+<p id="final"></p>
+
+<script>
+function checkUser() {
+    let upi = document.getElementById("upi").value;
+    let result = document.getElementById("result");
+    let warning = document.getElementById("warning");
+
+    if (upi === "") {
+        result.innerHTML = "Enter UPI ID!";
+        return;
+    }
+
+    result.innerHTML = "Receiver: Demo User";
+
+    if (upi.includes("new")) {
+        warning.innerHTML = "⚠️ New user detected!";
+    } else if (upi.includes("risk")) {
+        warning.innerHTML = "🚨 Suspicious account!";
+    } else {
+        warning.innerHTML = "✅ Safe account";
+    }
+
+    document.getElementById("paymentBox").style.display = "block";
+}
+
+function sendOTP() {
+    document.getElementById("otpBox").style.display = "block";
+}
+
+function verifyOTP() {
+    let otp = document.getElementById("otp").value;
+    let final = document.getElementById("final");
+
+    if (otp === "1234") {
+        final.innerHTML = "✅ Payment Successful!";
+    } else {
+        final.innerHTML = "❌ Wrong OTP!";
+    }
+}
+</script>
+
+</body>
+</html>
