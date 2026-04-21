@@ -16,26 +16,21 @@ body {
   border-radius: 12px;
   max-width: 400px;
   margin: auto;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 input, button {
   width: 100%;
   padding: 10px;
   margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
 }
 
 button {
-  background: #4CAF50;
+  background: green;
   color: white;
   border: none;
 }
 
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 </style>
 </head>
 
@@ -45,20 +40,24 @@ button {
 
 <h2>Safe Pay</h2>
 
+<!-- STEP 1: LIMIT FIRST -->
+<input type="number" id="limit" placeholder="Set No-OTP Limit">
+
+<!-- STEP 2: UPI -->
 <input type="text" id="upi" placeholder="Enter UPI ID">
 <button onclick="showUser()">Check Recipient</button>
 
 <p id="userDetails"></p>
 
-<input type="number" id="limit" placeholder="Set No-OTP Limit">
+<!-- STEP 3: AMOUNT -->
 <input type="number" id="amount" placeholder="Enter Amount">
 
 <button onclick="proceed()">Send Money</button>
 
 <div id="otpBox" class="hidden">
-  <p>OTP sent to recipient (Demo)</p>
-  <input type="number" id="otpInput" placeholder="Enter OTP (valid 30 min)">
-  <button onclick="verifyOTP()">Verify OTP</button>
+  <p>OTP sent (Demo)</p>
+  <input type="number" id="otpInput" placeholder="Enter OTP">
+  <button onclick="verifyOTP()">Verify</button>
 </div>
 
 <p id="result"></p>
@@ -72,7 +71,7 @@ let generatedOTP = "";
 function showUser() {
   let upi = document.getElementById("upi").value;
   document.getElementById("userDetails").innerText =
-    "Recipient: " + upi + " (Demo User)";
+    "Recipient: " + upi;
 }
 
 function proceed() {
@@ -85,20 +84,19 @@ function proceed() {
   } else {
     generatedOTP = Math.floor(1000 + Math.random() * 9000);
     alert("OTP Sent (Demo): " + generatedOTP);
-
     document.getElementById("otpBox").classList.remove("hidden");
   }
 }
 
 function verifyOTP() {
-  let userOtp = document.getElementById("otpInput").value;
+  let otp = document.getElementById("otpInput").value;
 
-  if (userOtp == generatedOTP) {
+  if (otp == generatedOTP) {
     document.getElementById("result").innerText =
-      "Payment Successful with OTP";
+      "Payment Successful";
   } else {
     document.getElementById("result").innerText =
-      "Incorrect OTP. Payment Failed";
+      "Wrong OTP";
   }
 }
 
@@ -106,3 +104,4 @@ function verifyOTP() {
 
 </body>
 </html>
+
