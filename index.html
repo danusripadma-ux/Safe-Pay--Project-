@@ -2,106 +2,248 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safe Pay</title>
 
 <style>
 body {
+  margin: 0;
   font-family: Arial;
-  background: #f2f2f2;
-  padding: 15px;
+  background: #eef2f7;
+  transition: 0.3s;
 }
 
-.container {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
+.dark {
+  background: #121212;
+  color: white;
+}
+
+.app {
   max-width: 400px;
   margin: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  flex: 1;
+  padding: 15px;
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  margin: 10px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.dark .card {
+  background: #1e1e1e;
 }
 
 input, button {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
 }
 
 button {
-  background: green;
+  background: #2e7d32;
   color: white;
   border: none;
 }
 
-.hidden { display: none; }
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 10px;
+}
+
+.dark .bottom-nav {
+  background: #1e1e1e;
+}
+
+.nav-btn {
+  cursor: pointer;
+  text-align: center;
+}
+
+.center { text-align: center; }
+.success { color: green; }
+
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-<h2>Safe Pay</h2>
+<!-- HOME -->
+<div class="screen active" id="home">
+  <h2>Safe Pay</h2>
+  <div class="card center">
+    <h3>₹12,540</h3>
+    <p>Available Balance</p>
+  </div>
 
-<!-- STEP 1: LIMIT FIRST -->
-<input type="number" id="limit" placeholder="Set No-OTP Limit">
+  <div class="card">
+    <button onclick="go('pay')">💸 Send Money</button>
+    <button onclick="go('qr')">📷 Scan & Pay</button>
+  </div>
 
-<!-- STEP 2: UPI -->
-<input type="text" id="upi" placeholder="Enter UPI ID">
-<button onclick="showUser()">Check Recipient</button>
-
-<p id="userDetails"></p>
-
-<!-- STEP 3: AMOUNT -->
-<input type="number" id="amount" placeholder="Enter Amount">
-
-<button onclick="proceed()">Send Money</button>
-
-<div id="otpBox" class="hidden">
-  <p>OTP sent (Demo)</p>
-  <input type="number" id="otpInput" placeholder="Enter OTP">
-  <button onclick="verifyOTP()">Verify</button>
+  <div class="card">
+    <p>🔒 Safe & Secure Payments</p>
+  </div>
 </div>
 
-<p id="result"></p>
+<!-- PAY FLOW -->
+<div class="screen" id="pay">
+  <div class="card">
+    <input id="limit" placeholder="Set No-OTP Limit ₹" type="number">
+    <input id="upi" placeholder="Enter UPI ID">
+    <button onclick="verifyUPI()">Verify</button>
+    <p id="user"></p>
+    <input id="amount" placeholder="Enter Amount ₹" type="number">
+    <button onclick="pay()">Pay</button>
+  </div>
+</div>
+
+<!-- OTP -->
+<div class="screen" id="otp">
+  <div class="card">
+    <h3>OTP Verification</h3>
+    <p>OTP sent (Demo)</p>
+    <input id="otpInput" placeholder="Enter OTP">
+    <button onclick="checkOTP()">Verify</button>
+  </div>
+</div>
+
+<!-- PROCESS -->
+<div class="screen center" id="process">
+  ⏳ Processing...
+</div>
+
+<!-- SUCCESS -->
+<div class="screen center" id="success">
+  <h3 class="success">✅ Payment Successful</h3>
+  <p id="details"></p>
+  <button onclick="go('home')">Done</button>
+</div>
+
+<!-- HISTORY -->
+<div class="screen" id="history">
+  <h3>Transaction History</h3>
+  <ul id="historyList"></ul>
+</div>
+
+<!-- QR -->
+<div class="screen center" id="qr">
+  <h3>📷 Scan QR (Demo)</h3>
+  <div class="card">[ QR Scanner UI ]</div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="profile">
+  <div class="card">
+    <h3>👤 Profile</h3>
+    <p>Name: Demo User</p>
+    <p>UPI: demo@upi</p>
+    <button onclick="toggleDark()">🌙 Toggle Dark Mode</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="bottom-nav">
+  <div class="nav-btn" onclick="go('home')">🏠 Home</div>
+  <div class="nav-btn" onclick="go('pay')">💸 Pay</div>
+  <div class="nav-btn" onclick="go('history')">📜 History</div>
+  <div class="nav-btn" onclick="go('profile')">👤 Profile</div>
+</div>
 
 </div>
 
 <script>
 
-let generatedOTP = "";
+let otp = "";
+let limitVal = 0;
+let historyData = [];
 
-function showUser() {
+function go(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function verifyUPI() {
   let upi = document.getElementById("upi").value;
-  document.getElementById("userDetails").innerText =
-    "Recipient: " + upi;
+  if (!upi.includes("@")) return alert("Invalid UPI");
+
+  document.getElementById("user").innerText =
+    "👤 Demo User | 🏦 Demo Bank";
 }
 
-function proceed() {
-  let amount = Number(document.getElementById("amount").value);
-  let limit = Number(document.getElementById("limit").value);
+function pay() {
+  let amt = Number(document.getElementById("amount").value);
+  limitVal = Number(document.getElementById("limit").value);
 
-  if (amount <= limit) {
-    document.getElementById("result").innerText =
-      "Payment Successful (No OTP required)";
+  if (!amt || !limitVal) return alert("Fill all fields");
+
+  if (amt <= limitVal) {
+    process(amt);
   } else {
-    generatedOTP = Math.floor(1000 + Math.random() * 9000);
-    alert("OTP Sent (Demo): " + generatedOTP);
-    document.getElementById("otpBox").classList.remove("hidden");
+    otp = Math.floor(1000 + Math.random() * 9000);
+    alert("OTP: " + otp);
+    go("otp");
   }
 }
 
-function verifyOTP() {
-  let otp = document.getElementById("otpInput").value;
-
-  if (otp == generatedOTP) {
-    document.getElementById("result").innerText =
-      "Payment Successful";
+function checkOTP() {
+  let val = document.getElementById("otpInput").value;
+  if (val == otp) {
+    let amt = document.getElementById("amount").value;
+    process(amt);
   } else {
-    document.getElementById("result").innerText =
-      "Wrong OTP";
+    alert("Wrong OTP");
   }
+}
+
+function process(amt) {
+  go("process");
+
+  setTimeout(() => {
+    document.getElementById("details").innerText =
+      "Paid ₹" + amt + " to Demo User";
+
+    historyData.push("Paid ₹" + amt + " ✔");
+    updateHistory();
+
+    go("success");
+  }, 2000);
+}
+
+function updateHistory() {
+  let list = document.getElementById("historyList");
+  list.innerHTML = "";
+  historyData.forEach(item => {
+    let li = document.createElement("li");
+    li.innerText = item;
+    list.appendChild(li);
+  });
+}
+
+function toggleDark() {
+  document.body.classList.toggle("dark");
 }
 
 </script>
 
 </body>
 </html>
-
